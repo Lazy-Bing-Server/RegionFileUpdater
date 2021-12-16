@@ -12,6 +12,7 @@ class Config(Serializable):
 	enabled: bool = True
 	source_world_directory: str = './qb_multi/slot1/world'
 	destination_world_directory: str = './server/world'
+	backup_world_directory: str = './region_update_backup'
 	dimension_region_folder: Dict[str, Union[str, List[str]]] = {
 		'-1': 'DIM-1/region',
 		'0': 'region',
@@ -158,8 +159,10 @@ def region_update(source: CommandSource):
 		for region_file in region.to_file_list():
 			source_dir = os.path.join(config.source_world_directory, region_file)
 			destination = os.path.join(config.destination_world_directory, region_file)
+			backup_dir = os.path.join(config.backup_world_directory, region_file)
 			try:
 				source.get_server().logger.info('- "{}" -> "{}"'.format(source_dir, destination))
+				shutil.copyfile(destination, backup_dir)
 				shutil.copyfile(source_dir, destination)
 			except Exception as e:
 				msg = '失败，错误信息：{}'.format(str(e))
