@@ -142,6 +142,12 @@ def show_history(source: CommandSource):
 
 
 @new_thread(PLUGIN_METADATA.name)
+def check_backup_dir_exist(check_dir_name):
+	if not os.path.exists(check_dir_name):
+		os.makedirs(check_dir_name)
+	return check_dir_name
+
+
 def region_update(source: CommandSource):
 	show_region_list(source)
 	countdown = 5
@@ -159,7 +165,9 @@ def region_update(source: CommandSource):
 		for region_file in region.to_file_list():
 			source_dir = os.path.join(config.source_world_directory, region_file)
 			destination = os.path.join(config.destination_world_directory, region_file)
-			backup_dir = os.path.join(config.backup_world_directory, region_file)
+			backup_dir_path = check_backup_dir_exist(config.backup_world_directory.join(time.strftime('%Y-%m-%d', time.localtime(time.time()))))
+			backup_dir = os.path.join(backup_dir_path
+									  , region_file)
 			try:
 				source.get_server().logger.info('- "{}" -> "{}"'.format(source_dir, destination))
 				shutil.copyfile(destination, backup_dir)
