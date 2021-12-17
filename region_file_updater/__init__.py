@@ -13,6 +13,7 @@ class Config(Serializable):
 	source_world_directory: str = './qb_multi/slot1/world'
 	destination_world_directory: str = './server/world'
 	backup_world_directory: str = './region_update_backup'
+	backup_slot: int = 20
 	dimension_region_folder: Dict[str, Union[str, List[str]]] = {
 		'-1': 'DIM-1/region',
 		'0': 'region',
@@ -166,8 +167,7 @@ def region_update(source: CommandSource):
 			source_dir = os.path.join(config.source_world_directory, region_file)
 			destination = os.path.join(config.destination_world_directory, region_file)
 			backup_dir_path = check_backup_dir_exist(config.backup_world_directory.join(time.strftime('%Y-%m-%d', time.localtime(time.time()))))
-			backup_dir = os.path.join(backup_dir_path
-									  , region_file)
+			backup_dir = os.path.join(backup_dir_path, region_file)
 			try:
 				source.get_server().logger.info('- "{}" -> "{}"'.format(source_dir, destination))
 				shutil.copyfile(destination, backup_dir)
@@ -186,11 +186,24 @@ def region_update(source: CommandSource):
 	source.get_server().start()
 
 
+def remove_older_backup(backup_path):
+	for lists in os.listdir(backup_path):
+		sub_path = os.path.join(backup_path, lists)
+		if os.path.isdir(sub_path):
+			dir_count: int = dir_count + 1
+	if dir_count > config.backup_slot:
+		for lists in os.listdir(backup_path):
+			# 这里该循环比较删除最老的文件夹
+
+
+
+
 def on_load(server: PluginServerInterface, old):
 	try:
 		global historyList, regionList
 		historyList = old.historyList
 		regionList = old.regionList
+		remove_older_backup(config.backup_world_directory)
 	except AttributeError:
 		pass
 
